@@ -1,4 +1,4 @@
-import { MenuItem } from '../data/menuData';
+import type { MenuItem } from '../data/menuData';
 
 export interface CartItem {
   id: string; // unique cart line id

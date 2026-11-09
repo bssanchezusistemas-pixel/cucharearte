@@ -47,12 +47,12 @@ export function isStoreOpen(): { isOpen: boolean; statusText: string } {
   if (isOpen) {
     return {
       isOpen: true,
-      statusText: `Abierto Ahora • Cierra a las ${STORE_INFO.closeHour}:00 PM`
+      statusText: `Abierto Ahora • Cierra a las 11:00 PM`
     };
   } else {
     return {
       isOpen: false,
-      statusText: `Cerrado • Abre hoy a las ${STORE_INFO.openHour}:00 PM`
+      statusText: `Cerrado • Abre hoy a las 2:00 PM`
     };
   }
 }

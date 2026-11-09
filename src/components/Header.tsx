@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, MapPin, Radio, Clock, Menu, X, Sparkles } from 'lucide-react';
-import { STORE_INFO } from '../data/menuData';
 import { useCart } from '../context/CartContext';
 import { useProximity } from '../context/ProximityContext';
 import { isStoreOpen } from '../utils/geo';
@@ -32,7 +31,7 @@ export const Header: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo & Brand */}
-          <a href="#" className="flex items-center gap-3 group">
+          <a href="#" className="flex items-center gap-3 group shrink-0">
             <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-brand-pink to-brand-coral p-0.5 shadow-neon-sm group-hover:scale-105 transition-transform">
               <div className="w-full h-full bg-white rounded-full flex items-center justify-center flex-col">
                 <span className="text-xl">🍦</span>
@@ -55,7 +54,7 @@ export const Header: React.FC = () => {
           </a>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-brand-chocolate/80">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-brand-chocolate/80 whitespace-nowrap">
             <a href="#menu" className="hover:text-brand-pink transition-colors">
               Menú Digital
             </a>

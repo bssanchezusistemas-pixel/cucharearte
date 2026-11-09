@@ -35,7 +35,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCustomizer }) => {
 
             {/* Subheading */}
             <p className="text-base sm:text-lg text-brand-chocolate/75 max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Sumérgete en la experiencia de nuestros famosos <b>Waffles en Cono</b>, potes de helado artesanal con capas secretas y <b>Bowls de frutas</b> con Lucky Charms. Diseñados para disfrutar con cada cucharada.
+              Sumérgete en la experiencia de nuestro famoso <b>Waffle en Cono ($30.000)</b>, <b>Cuchareables Tradicionales ($14.000)</b>, <b>Premium ($16.000)</b>, <b>Combinados de Autor</b> y Malteadas con tus marcas favoritas (Chocorramo, Leche Klim, Milo, Flips, Oreo).
             </p>
 
             {/* CTAs */}
@@ -123,8 +123,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCustomizer }) => {
                     <span>WAFFLE EN CONO</span>
                   </div>
 
-                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-brand-chocolate text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                    $15.000 COP
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md text-brand-pink text-xs font-extrabold px-3 py-1.5 rounded-full shadow-lg">
+                    $30.000 COP
                   </div>
 
                   <div className="absolute bottom-5 left-5 right-5 text-white">
@@ -133,10 +133,10 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCustomizer }) => {
                       Especialidad de la Casa
                     </p>
                     <h3 className="font-display text-2xl font-bold leading-tight">
-                      Fresas Frescas & Perlas de Chocolate Blanco
+                      Waffle en Cono con Fresas, Banano & Chantilly
                     </h3>
                     <p className="text-xs text-white/80 mt-1 line-clamp-1">
-                      Cono artesanal tibio + Helado cremoso + Baño de Nutella
+                      Cono artesanal + Helado + 1 Topping + 1 Salsa a elección
                     </p>
                   </div>
                 </div>
@@ -157,14 +157,14 @@ export const Hero: React.FC<HeroProps> = ({ onOpenCustomizer }) => {
                 </div>
               </div>
 
-              {/* Floating Badge 2: Lucky Charms / Toppings */}
+              {/* Floating Badge 2: Toppings Favoritos */}
               <div className="absolute -bottom-6 -right-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-card border border-brand-pink/20 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-brand-softpink text-2xl flex items-center justify-center">
-                  🌈
+                  🍨
                 </div>
                 <div>
                   <div className="flex items-center gap-1 text-xs font-bold text-brand-chocolate">
-                    <span>Lucky Charms & Nutella</span>
+                    <span>Chocorramo, Klim & Milo</span>
                   </div>
                   <p className="text-[11px] text-brand-chocolate/70">
                     Toppings favoritos de los clientes

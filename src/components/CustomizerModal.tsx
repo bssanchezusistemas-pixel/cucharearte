@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { X, Check, Plus, Minus, Sparkles, Heart } from 'lucide-react';
-import { CUSTOMIZER_OPTIONS, MenuItem } from '../data/menuData';
+import React, { useState, useEffect } from 'react';
+import { X, Check, Sparkles, Plus } from 'lucide-react';
+import { CUSTOMIZER_OPTIONS } from '../data/menuData';
+import type { MenuItem } from '../data/menuData';
 import { useCart } from '../context/CartContext';
 
 interface CustomizerModalProps {
@@ -12,75 +13,59 @@ interface CustomizerModalProps {
 export const CustomizerModal: React.FC<CustomizerModalProps> = ({ isOpen, onClose, baseItem }) => {
   const { addItem } = useCart();
 
-  const [selectedSize, setSelectedSize] = useState(CUSTOMIZER_OPTIONS.sizes[0]);
-  const [selectedFlavors, setSelectedFlavors] = useState<string[]>([CUSTOMIZER_OPTIONS.iceCreamFlavors[0]]);
-  const [selectedSauces, setSelectedSauces] = useState<string[]>([CUSTOMIZER_OPTIONS.sauces[0]]);
-  const [selectedToppings, setSelectedToppings] = useState<string[]>([CUSTOMIZER_OPTIONS.toppings[0], CUSTOMIZER_OPTIONS.toppings[1]]);
+  // Waffle en cono specific options
+  const isWaffle = baseItem?.category === 'waffles';
+
+  const [selectedIceCream, setSelectedIceCream] = useState<string>(CUSTOMIZER_OPTIONS.waffleIceCreams[0]);
+  const [selectedWaffleTopping, setSelectedWaffleTopping] = useState<string>(CUSTOMIZER_OPTIONS.waffleToppings[0]);
+  const [selectedWaffleSauce, setSelectedWaffleSauce] = useState<string>(CUSTOMIZER_OPTIONS.waffleSauces[0]);
+  
+  // Extra toppings (+$3.000 COP each as per official menu)
+  const [selectedExtraToppings, setSelectedExtraToppings] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedExtraToppings([]);
+      setNotes('');
+      setSelectedIceCream(CUSTOMIZER_OPTIONS.waffleIceCreams[0]);
+      setSelectedWaffleTopping(CUSTOMIZER_OPTIONS.waffleToppings[0]);
+      setSelectedWaffleSauce(CUSTOMIZER_OPTIONS.waffleSauces[0]);
+    }
+  }, [isOpen, baseItem]);
 
   if (!isOpen) return null;
 
-  const basePrice = baseItem ? baseItem.price : 14500;
-  const totalPrice = basePrice + selectedSize.extra;
+  const basePrice = baseItem ? baseItem.price : 14000;
+  const extraToppingsTotal = selectedExtraToppings.length * CUSTOMIZER_OPTIONS.toppingAdicionalPrice;
+  const totalPrice = basePrice + extraToppingsTotal;
 
-  const toggleFlavor = (flavor: string) => {
-    if (selectedFlavors.includes(flavor)) {
-      if (selectedFlavors.length > 1) {
-        setSelectedFlavors(selectedFlavors.filter(f => f !== flavor));
-      }
+  const toggleExtraTopping = (topping: string) => {
+    if (selectedExtraToppings.includes(topping)) {
+      setSelectedExtraToppings(selectedExtraToppings.filter(t => t !== topping));
     } else {
-      if (selectedFlavors.length < 2) {
-        setSelectedFlavors([...selectedFlavors, flavor]);
-      } else {
-        setSelectedFlavors([selectedFlavors[1], flavor]);
-      }
-    }
-  };
-
-  const toggleSauce = (sauce: string) => {
-    if (selectedSauces.includes(sauce)) {
-      if (selectedSauces.length > 1) {
-        setSelectedSauces(selectedSauces.filter(s => s !== sauce));
-      }
-    } else {
-      if (selectedSauces.length < 2) {
-        setSelectedSauces([...selectedSauces, sauce]);
-      } else {
-        setSelectedSauces([selectedSauces[1], sauce]);
-      }
-    }
-  };
-
-  const toggleTopping = (topping: string) => {
-    if (selectedToppings.includes(topping)) {
-      setSelectedToppings(selectedToppings.filter(t => t !== topping));
-    } else {
-      if (selectedToppings.length < 3) {
-        setSelectedToppings([...selectedToppings, topping]);
-      } else {
-        // replace first
-        setSelectedToppings([...selectedToppings.slice(1), topping]);
-      }
+      setSelectedExtraToppings([...selectedExtraToppings, topping]);
     }
   };
 
   const handleAddToCart = () => {
     const itemToUse: MenuItem = baseItem || {
-      id: 'custom-cuchareable',
-      name: 'Pote Cuchareable Personalizado 🥄',
-      category: 'cuchareables',
-      price: 14500,
-      description: 'Armado a tu gusto con tus helados, salsas y toppings favoritos.',
-      image: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=800&q=80',
-      ingredients: [...selectedFlavors, ...selectedSauces, ...selectedToppings]
+      id: 'cuchareable-personalizado',
+      name: 'Cuchareable de Autor 🥄',
+      category: 'combinados',
+      price: 17000,
+      description: 'Cuchareable preparado a tu gusto con toppings adicionales.',
+      image: '/menu/menu_combinados.jpg',
+      ingredients: selectedExtraToppings.length > 0 ? selectedExtraToppings : ['Helado artesanal']
     };
 
     addItem(itemToUse, {
-      size: `${selectedSize.name}`,
-      sizePriceExtra: selectedSize.extra,
-      flavors: selectedFlavors,
-      sauces: selectedSauces,
-      toppings: selectedToppings,
+      flavors: isWaffle ? [selectedIceCream] : [],
+      sauces: isWaffle ? [selectedWaffleSauce] : [],
+      toppings: isWaffle
+        ? [selectedWaffleTopping, ...selectedExtraToppings]
+        : selectedExtraToppings,
+      sizePriceExtra: extraToppingsTotal,
       notes: notes.trim() || undefined
     });
 
@@ -95,14 +80,16 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({ isOpen, onClos
         <div className="p-6 bg-gradient-to-r from-brand-softpink via-white to-brand-softpink border-b border-brand-pink/15 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-brand-pink text-white flex items-center justify-center text-2xl shadow-neon-sm">
-              🥄
+              {isWaffle ? '🧇' : '🍨'}
             </div>
             <div>
               <h3 className="font-display text-xl sm:text-2xl font-bold text-brand-chocolate">
-                {baseItem ? `Personalizar: ${baseItem.name}` : 'Arma tu Cuchareable Soñado'}
+                {baseItem ? baseItem.name : 'Personaliza tu Cuchareable'}
               </h3>
               <p className="text-xs text-brand-chocolate/70">
-                Elige tus bases, salsas calientes y toppings crocantes
+                {isWaffle
+                  ? 'Incluye Waffle, Helado, Fresas y Banano, Chantilly, 1 Topping y 1 Salsa'
+                  : 'Agrega toppings adicionales a tu pote ($3.000 c/u)'}
               </p>
             </div>
           </div>
@@ -115,145 +102,152 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
           
-          {/* Step 1: Tamaño */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-sm sm:text-base text-brand-chocolate flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">1</span>
-                <span>Elige el Tamaño del Pote</span>
-              </h4>
-              <span className="text-xs font-semibold text-brand-pink">Obligatorio</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {CUSTOMIZER_OPTIONS.sizes.map((s) => {
-                const isSelected = selectedSize.id === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => setSelectedSize(s)}
-                    className={`p-4 rounded-2xl border-2 text-left transition-all ${
-                      isSelected
-                        ? 'border-brand-pink bg-brand-softpink shadow-sm'
-                        : 'border-slate-100 bg-white hover:border-brand-pink/40'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start">
-                      <p className="font-bold text-sm text-brand-chocolate">{s.name}</p>
-                      {isSelected && <Check className="w-4 h-4 text-brand-pink" />}
-                    </div>
-                    <p className="text-xs text-brand-chocolate/60 mt-1">{s.desc}</p>
-                    <p className="text-xs font-bold text-brand-pink mt-2">
-                      {s.extra === 0 ? 'Precio Base' : `+ $${s.extra.toLocaleString('es-CO')} COP`}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {/* Waffle En Cono Customization */}
+          {isWaffle ? (
+            <>
+              {/* Included Ingredients banner */}
+              <div className="p-4 rounded-2xl bg-brand-softpink/60 border border-brand-pink/20 space-y-1.5">
+                <span className="text-[11px] font-bold text-brand-pink uppercase tracking-wider">
+                  Ingredientes Incluidos en tu Waffle ($30.000 COP)
+                </span>
+                <p className="text-xs text-brand-chocolate font-medium">
+                  ✓ Waffle horneado • ✓ Porción de Helado • ✓ Fresas y Banano frescos • ✓ Crema Chantilly
+                </p>
+              </div>
 
-          {/* Step 2: Sabores de Helado */}
+              {/* Step 1: Sabor de Helado */}
+              <div>
+                <h4 className="font-bold text-sm text-brand-chocolate mb-2 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">1</span>
+                  <span>Elige el Sabor de Helado</span>
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {CUSTOMIZER_OPTIONS.waffleIceCreams.map((flavor) => {
+                    const isSelected = selectedIceCream === flavor;
+                    return (
+                      <button
+                        key={flavor}
+                        type="button"
+                        onClick={() => setSelectedIceCream(flavor)}
+                        className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'border-brand-pink bg-brand-pink text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50/50 hover:bg-brand-softpink/40 text-brand-chocolate'
+                        }`}
+                      >
+                        <span>{flavor}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 2: 1 Topping Incluido */}
+              <div>
+                <h4 className="font-bold text-sm text-brand-chocolate mb-2 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">2</span>
+                  <span>Elige 1 Topping Incluido</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {CUSTOMIZER_OPTIONS.waffleToppings.map((top) => {
+                    const isSelected = selectedWaffleTopping === top;
+                    return (
+                      <button
+                        key={top}
+                        type="button"
+                        onClick={() => setSelectedWaffleTopping(top)}
+                        className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'border-brand-coral bg-brand-coral text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50/50 hover:bg-brand-blush/30 text-brand-chocolate'
+                        }`}
+                      >
+                        <span>{top}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Step 3: 1 Salsa Incluida */}
+              <div>
+                <h4 className="font-bold text-sm text-brand-chocolate mb-2 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">3</span>
+                  <span>Elige 1 Salsa Incluida</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {CUSTOMIZER_OPTIONS.waffleSauces.map((sauce) => {
+                    const isSelected = selectedWaffleSauce === sauce;
+                    return (
+                      <button
+                        key={sauce}
+                        type="button"
+                        onClick={() => setSelectedWaffleSauce(sauce)}
+                        className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'border-brand-waffle bg-brand-waffle text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50/50 hover:bg-brand-waffle-light/30 text-brand-chocolate'
+                        }`}
+                      >
+                        <span>{sauce}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Non-Waffle product description */
+            <div className="p-4 rounded-2xl bg-brand-softpink/40 border border-brand-pink/20 space-y-1">
+              <span className="text-[11px] font-bold text-brand-pink uppercase tracking-wider">
+                Receta de la Casa: {baseItem?.name}
+              </span>
+              <p className="text-xs text-brand-chocolate/80">
+                {baseItem?.description}
+              </p>
+            </div>
+          )}
+
+          {/* Toppings Adicionales ($3.000 COP cada uno) */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-sm sm:text-base text-brand-chocolate flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">2</span>
-                <span>Bolas de Helado Artesanal</span>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-bold text-sm text-brand-chocolate flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-brand-waffle" />
+                <span>¿Deseas Topping Adicional? (+$3.000 COP c/u)</span>
               </h4>
               <span className="text-xs text-brand-chocolate/70">
-                Seleccionados: {selectedFlavors.length}/2
+                {selectedExtraToppings.length} seleccionado(s)
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {CUSTOMIZER_OPTIONS.iceCreamFlavors.map((flavor) => {
-                const isSelected = selectedFlavors.includes(flavor);
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {CUSTOMIZER_OPTIONS.extraToppings.map((extra) => {
+                const isSelected = selectedExtraToppings.includes(extra);
                 return (
                   <button
-                    key={flavor}
+                    key={extra}
                     type="button"
-                    onClick={() => toggleFlavor(flavor)}
-                    className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                    onClick={() => toggleExtraTopping(extra)}
+                    className={`p-2.5 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
                       isSelected
-                        ? 'border-brand-pink bg-brand-pink text-white shadow-sm'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-brand-softpink/40 text-brand-chocolate'
+                        ? 'border-brand-pink bg-brand-softpink text-brand-pink shadow-sm font-bold'
+                        : 'border-slate-200 bg-white hover:bg-slate-50 text-brand-chocolate'
                     }`}
                   >
-                    <span>{flavor}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
+                    <span>{extra}</span>
+                    {isSelected ? <Check className="w-3.5 h-3.5 text-brand-pink" /> : <Plus className="w-3.5 h-3.5 text-slate-300" />}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Step 3: Salsas */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-sm sm:text-base text-brand-chocolate flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">3</span>
-                <span>Salsas Líquidas & Dulces</span>
-              </h4>
-              <span className="text-xs text-brand-chocolate/70">
-                Seleccionadas: {selectedSauces.length}/2
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {CUSTOMIZER_OPTIONS.sauces.map((sauce) => {
-                const isSelected = selectedSauces.includes(sauce);
-                return (
-                  <button
-                    key={sauce}
-                    type="button"
-                    onClick={() => toggleSauce(sauce)}
-                    className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'border-brand-waffle bg-brand-waffle text-white shadow-sm'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-brand-waffle-light/30 text-brand-chocolate'
-                    }`}
-                  >
-                    <span>{sauce}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Step 4: Toppings */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="font-bold text-sm sm:text-base text-brand-chocolate flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-brand-pink text-white text-xs flex items-center justify-center">4</span>
-                <span>Toppings & Crunches</span>
-              </h4>
-              <span className="text-xs text-brand-chocolate/70">
-                Seleccionados: {selectedToppings.length}/3
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-              {CUSTOMIZER_OPTIONS.toppings.map((top) => {
-                const isSelected = selectedToppings.includes(top);
-                return (
-                  <button
-                    key={top}
-                    type="button"
-                    onClick={() => toggleTopping(top)}
-                    className={`p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
-                      isSelected
-                        ? 'border-brand-coral bg-brand-coral text-white shadow-sm'
-                        : 'border-slate-200 bg-slate-50/50 hover:bg-brand-blush/30 text-brand-chocolate'
-                    }`}
-                  >
-                    <span>{top}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 ml-1 flex-shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Step 5: Notas especiales */}
+          {/* Notas */}
           <div>
             <label className="block text-xs font-bold text-brand-chocolate mb-1.5">
               Notas o instrucciones especiales (Opcional):
@@ -261,7 +255,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({ isOpen, onClos
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ej: Mucha salsa de Nutella, sin barquillo, etc."
+              placeholder="Ej: Con bastante salsa, sin banano, etc."
               rows={2}
               className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:border-brand-pink bg-slate-50/50"
             />
@@ -283,7 +277,7 @@ export const CustomizerModal: React.FC<CustomizerModalProps> = ({ isOpen, onClos
             className="flex-1 max-w-xs py-3.5 px-6 rounded-2xl bg-gradient-to-r from-brand-pink to-brand-coral text-white font-bold text-sm shadow-neon-pink hover:opacity-95 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Agregar a mi Pedido 🥄</span>
+            <span>Agregar al Pedido 🥄</span>
           </button>
         </div>
 

@@ -17,9 +17,10 @@
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px -2px rgba(255, 42, 133, 0.08);
 }
 
 .glass-dark {
